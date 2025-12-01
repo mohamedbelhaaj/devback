@@ -61,7 +61,7 @@ pipeline {
                     
                     echo "===== Running SonarScanner ====="
                     sonar-scanner \
-                        -Dsonar.projectKey=Django-Test \
+                        -Dsonar.projectKey=django-test \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://host.docker.internal:9000 \
                         -Dsonar.token="${SONAR-TOKEN}" \
