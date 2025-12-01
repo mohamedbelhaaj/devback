@@ -1,0 +1,24 @@
+{
+  "name": "cloudanalysisinfra",
+  "version": "1.0.0",
+  "description": "A simple Django-based web application that analyzes URLs, IP addresses, and files (up to 32MB) using the VirusTotal API and OTX (AlienVault).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jnefaa/CloudAnalysisinfra.git"
+  },
+  "keywords": [],
+  "author": "medamine.torjmen <medamine.torjmen@discovery.com.tn>",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jnefaa/CloudAnalysisinfra/issues"
+  },
+  "homepage": "https://github.com/Jnefaa/CloudAnalysisinfra#readme",
+  "dependencies": {
+    "@playwright/test": "^1.57.0"
+  }
+}

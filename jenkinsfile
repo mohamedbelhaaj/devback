@@ -1,0 +1,119 @@
+pipeline {
+    agent any
+
+    environment {
+        VENV = "${WORKSPACE}/venv"
+        SONAR_TOKEN = credentials('SONAR-TOKEN')
+        SONAR_HOST_URL = 'http://host.docker.internal:9000'
+        DOCKER_IMAGE = 'mohamedbelhaj/djangoproject'
+        DOCKER_TAG = "${BUILD_NUMBER}"
+        DOCKER_HOST = 'tcp://host.docker.internal:2375'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/Jnefaa/CloudAnalysisinfra', branch: 'main'
+            }
+        }
+
+        stage('Create Virtualenv + Install Dependencies') {
+            steps {
+                sh '''
+                    python3 -m venv $VENV
+                    . $VENV/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh '''
+                    . $VENV/bin/activate
+                    pip install flake8
+                    flake8 . --exclude=venv --count --exit-zero --max-complexity=10 --max-line-length=127 || true
+                '''
+            }
+        }
+     
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                    . $VENV/bin/activate
+                    echo "===== Running Django tests ====="
+                    python manage.py test --noinput
+                '''
+            }
+        }
+
+        stage('SonarQube Analysis') {
+    steps {
+        script {
+            withCredentials([string(credentialsId: 'sonarscanner', variable: 'SONAR-TOKEN')]) {
+                sh '''
+                    echo "===== Testing SonarQube connection ====="
+                    curl -s http://host.docker.internal:9000/api/system/status
+                    
+                    echo "===== Running SonarScanner ====="
+                    sonar-scanner \
+                        -Dsonar.projectKey=djangotest \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://host.docker.internal:9000 \
+                        -Dsonar.token="${SONAR-TOKEN}" \
+                        -Dsonar.exclusions=**/venv/**,**/migrations/**,**/tests.py \
+                        -Dsonar.python.version=3.13
+                '''
+            }
+        }
+    }
+}
+        stage('Quality Gate') {
+            when {
+                expression { return currentBuild.currentResult == 'SUCCESS' }
+            }
+            steps {
+                echo "Quality Gate stage skipped for simplicity."
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                    echo "===== Building Docker Image ====="
+                    docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+                    docker tag $DOCKER_IMAGE:$DOCKER_TAG $DOCKER_IMAGE:latest
+                    echo "===== Image created: $DOCKER_IMAGE:$DOCKER_TAG ====="
+                    docker images | grep djangoproject
+                '''
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                sh '''
+                    echo "===== Logging in to Docker Hub ====="
+                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    
+                    echo "===== Pushing Docker Image ====="
+                    docker push $DOCKER_IMAGE:$DOCKER_TAG
+                    docker push $DOCKER_IMAGE:latest
+                    
+                    echo "===== Push completed successfully ====="
+                '''
+            }
+        }
+
+    }
+
+    post {
+        always {
+            sh 'docker logout'
+            cleanWs()
+        }
+    }
+}
