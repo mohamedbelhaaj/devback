@@ -64,7 +64,7 @@ pipeline {
                         -Dsonar.projectKey=django-test \
                         -Dsonar.sources=. \
                         -Dsonar.host.url=http://host.docker.internal:9000 \
-                        -Dsonar.token="${SONAR-TOKEN}" \
+                        -Dsonar.token=${SONAR_TOKEN} \
                         -Dsonar.exclusions=**/venv/**,**/migrations/**,**/tests.py \
                         -Dsonar.python.version=3.13
                 '''
