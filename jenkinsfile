@@ -61,11 +61,10 @@ pipeline {
                     
                     echo "===== Running SonarScanner ====="
                     sonar-scanner \
-                        sonar-scanner \
                         -Dsonar.projectKey=Django-Test \
                         -Dsonar.sources=. \
-                       -Dsonar.host.url=http://localhost:9000 \
-                        -Dsonar.token=sqp_08415945fd46c46448f01312b6ba74d39de6d270
+                        -Dsonar.host.url=http://host.docker.internal:9000 \
+                        -Dsonar.token="${SONAR-TOKEN}" \
                         -Dsonar.exclusions=**/venv/**,**/migrations/**,**/tests.py \
                         -Dsonar.python.version=3.13
                 '''
