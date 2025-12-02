@@ -52,11 +52,15 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
+                    // Test connection first
+                    sh '''
+                        echo "===== Testing SonarQube connection ====="
+                        curl -s http://host.docker.internal:9000/api/system/status || echo "Warning: Could not connect to SonarQube"
+                    '''
+                    
+                    // Run SonarScanner with credentials
                     withCredentials([string(credentialsId: 'sonarscanner', variable: 'SONAR_TOKEN')]) {
                         sh '''
-                            echo "===== Testing SonarQube connection ====="
-                            curl -s http://host.docker.internal:9000/api/system/status
-                            
                             echo "===== Running SonarScanner with Docker ====="
                             docker run --rm \
                                 --network=host \
