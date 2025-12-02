@@ -12,3 +12,14 @@ requests>=2.28.0
 python-dotenv
 gunicorn
 
+
+# Tests & Coverage
+pytest>=7.4.0
+pytest-django>=4.5.0
+pytest-cov>=4.1.0
+coverage>=7.3.0
+
+# Qualité du code
+flake8>=6.1.0
+bandit>=1.7.5
+pylint>=3.0.0
