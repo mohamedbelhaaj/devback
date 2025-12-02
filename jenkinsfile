@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         VENV = "${WORKSPACE}/venv"
-        SONAR_TOKEN = credentials('SONAR-TOKEN')
         SONAR_HOST_URL = 'http://host.docker.internal:9000'
         DOCKER_IMAGE = 'mohamedbelhaj/djangoproject'
         DOCKER_TAG = "${BUILD_NUMBER}"
@@ -15,7 +14,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/mohamedbelhaaj/devback', branch: 'main'
+                git url: 'https://github.com/mohamedbelhaaj/devback.git', branch: 'main'
             }
         }
 
@@ -39,7 +38,6 @@ pipeline {
                 '''
             }
         }
-     
 
         stage('Run Tests') {
             steps {
@@ -52,32 +50,42 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-    steps {
-        script {
-            withCredentials([string(credentialsId: 'SONAR-TOKEN', variable: 'SONAR-TOKEN')]) {
-                sh '''
-                    echo "===== Testing SonarQube connection ====="
-                    curl -s http://host.docker.internal:9000/api/system/status
-                    
-                    echo "===== Running SonarScanner ====="
-                    sonar-scanner \
-                        -Dsonar.projectKey=django-test \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://host.docker.internal:9000 \
-                        -Dsonar.token=${SONAR_TOKEN} \
-                        -Dsonar.exclusions=**/venv/**,**/migrations/**,**/tests.py \
-                        -Dsonar.python.version=3.13
-                '''
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'sonarscanner', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            echo "===== Testing SonarQube connection ====="
+                            curl -s http://host.docker.internal:9000/api/system/status
+                            
+                            echo "===== Running SonarScanner with Docker ====="
+                            docker run --rm \
+                                --network=host \
+                                -e SONAR_HOST_URL="${SONAR_HOST_URL}" \
+                                -e SONAR_TOKEN="${SONAR_TOKEN}" \
+                                -v "${WORKSPACE}:/usr/src" \
+                                sonarsource/sonar-scanner-cli \
+                                -Dsonar.projectKey=djangotest \
+                                -Dsonar.sources=/usr/src \
+                                -Dsonar.host.url=http://host.docker.internal:9000 \
+                                -Dsonar.token="${SONAR_TOKEN}" \
+                                -Dsonar.exclusions=**/venv/**,**/migrations/**,**/tests.py,**/__pycache__/** \
+                                -Dsonar.python.version=3.13
+                        '''
+                    }
+                }
             }
         }
-    }
-}
+
         stage('Quality Gate') {
             when {
                 expression { return currentBuild.currentResult == 'SUCCESS' }
             }
             steps {
-                echo "Quality Gate stage skipped for simplicity."
+                script {
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: false
+                    }
+                }
             }
         }
 
@@ -107,13 +115,18 @@ pipeline {
                 '''
             }
         }
-
     }
 
     post {
         always {
-            sh 'docker logout'
+            sh 'docker logout || true'
             cleanWs()
+        }
+        success {
+            echo "Pipeline completed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Check logs for details."
         }
     }
 }
