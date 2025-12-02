@@ -68,7 +68,7 @@ pipeline {
                                 -e SONAR_TOKEN="${SONAR_TOKEN}" \
                                 -v "${WORKSPACE}:/usr/src" \
                                 sonarsource/sonar-scanner-cli \
-                                -Dsonar.projectKey=djangotest \
+                                -Dsonar.projectKey=django-test \
                                 -Dsonar.sources=/usr/src \
                                 -Dsonar.host.url=http://host.docker.internal:9000 \
                                 -Dsonar.token="${SONAR_TOKEN}" \
