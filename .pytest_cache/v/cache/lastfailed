@@ -1,0 +1,11 @@
+{
+  "virus_analyzer/tests": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_registration[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_login_analyst[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_login_admin[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_profile_update[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_logout[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_invalid_login[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::TestUserModel::test_user_role_display[chromium]": true,
+  "virus_analyzer/tests/test_user_model.py::test_login_flow[chromium]": true
+}

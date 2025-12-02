@@ -41,4 +41,5 @@ urlpatterns = [
     
     # ==================== ALL API ROUTES ====================
     path('api/', include(router.urls)),
+    path('api/auth/', include('dj_rest_auth.urls')),
 ]

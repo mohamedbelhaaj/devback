@@ -1,0 +1,8 @@
+logs/
+results/
+data/test_files/
+reports/
+*.log
+.env.test
+__pycache__/
+*.pyc
